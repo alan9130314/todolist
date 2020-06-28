@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/css/bootstrap.css">
+  <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+    crossorigin="anonymous"></script>
+  <style>
+    .completed {
+      text-decoration: line-through
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app" class="container my-3">
+    <div class="input-group mb-3">
+      <div class="input-group-prepend">
+        <span class="input-group-text">待辦事項</span>
+      </div>
+      <input type="text" class="form-control" placeholder="準備要做的任務" id="newTodo">
+      <div class="input-group-append">
+        <button class="btn btn-primary" type="button" id="addTodo">新增</button>
+      </div>
+    </div>
+    <div class="card text-center">
+      <ul class="list-group list-group-flush text-left" id="todoList">
+      </ul>
+      <div class="card-footer d-flex justify-content-between">
+        <span>還有 <span id="taskCount">0</span> 筆任務</span>
+        <a href="#" id="clearTask">清除所有任務</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    $(document).ready(function () {
+      var todoInput = $('#newTodo');
+      var addBtn = $('#addTodo');
+      var clearAllBtn = $('#clearTask');
+      var todoList = $('#todoList');
+      var countTodo = $('#taskCount');
+
+      // $('body').on('click', addBtn, function () {
+      //   addTodo();
+      // });
+      // $(addBtn).on('click', function () {
+      //   addTodo();
+      // });
+      $(addBtn).click(function (e) { 
+        e.preventDefault();
+        addTodo(e);
+      });
+
+      // $('body').on('click', clearAllBtn, function (e) {
+      //   clearAllTask(e);
+      // });
+      $(clearAllBtn).on('click', function (e) {
+        e.preventDefault();
+        clearAllTask(e);
+      });
+      
+
+      // $('body').on('click', todoList, function (e) {
+      //   doSomething(e);
+      // });
+      // $(todoList).on('click', function (e) {
+      //   doSomething(e);
+      // });
+      $( "body" ).on( "click", todoList, function(e) {
+        doSomething(e);
+      });
+
+      var todoData = [];
+      renderPage(todoData);
+
+      function addTodo() {
+        var newTodo = todoInput.val().trim();
+        var timeStamp = Math.floor(Date.now());
+        if (newTodo !== '') {
+          todoData.push({
+            id: timeStamp,
+            title: newTodo,
+            completed: false,
+          })
+          renderPage(todoData);
+          todoInput.val('');
+        }
+      }
+
+      function removeTodo(id) {
+        var newIndex = 0;
+        $.each(todoData, function (indexInArray, valueOfElement) {
+          if (id == valueOfElement.id) {
+            newIndex = indexInArray;
+          }
+        });
+        todoData.splice(newIndex, 1)
+        renderPage(todoData);
+      }
+
+      function completeTodo(id) {
+        $.each(todoData, function (indexInArray, valueOfElement) {
+          if (id == valueOfElement.id) {
+            valueOfElement.completed = valueOfElement.completed ? false : true;
+          }
+        });
+        renderPage(todoData);
+      }
+
+      function clearAllTask(e) {
+        e.preventDefault();
+        todoData = [];
+        renderPage(todoData);
+      }
+
+      function doSomething(e) {
+        var action = e.target.parentNode.dataset.action;
+        var id = e.target.parentNode.dataset.id;
+        if (action == 'remove') {
+          removeTodo(id);
+        } else if (action === 'complete') {
+          completeTodo(id);
+        }
+      }
+
+      function renderPage(data) {
+        var str = '';
+        $.each(data, function (indexInArray, valueOfElement) {
+          str += 
+          `<li class="list-group-item">
+            <div class="d-flex">
+              <div class="form-check" data-action="complete" data-id="${valueOfElement.id}">
+                <input type="checkbox" class="form-check-input" ${valueOfElement.completed ? 'checked' : ''}>
+                  <label class="form-check-label ${valueOfElement.completed ? 'completed' : ''}"> ${valueOfElement.title}</label>
+              </div>
+              <button type="button" class="close ml-auto remove" aria-label="Close" data-action="remove" data-id="${valueOfElement.id}">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+          </li>`;
+        });
+        todoList.html(str);
+        countTodo.text(data.length);
+      };
+    });
+
+    // var todoData = [];
+
+    // document.getElementById('addTodo').addEventListener('click', function () {
+    //   var str = '';
+    //   if (document.getElementById('newTodo').value.trim() !== '') {
+    //     todoData.push({
+    //       id: Math.floor(Date.now()),
+    //       title: document.getElementById('newTodo').value,
+    //       completed: false,
+    //     })
+    //     todoData.forEach(function (item) {
+    //       str += `<li class="list-group-item">
+    //           <div class="d-flex">
+    //           <div class="form-check">
+    //           <input type="checkbox" class="form-check-input" ${item.completed ? 'checked' : ''} data-action="complete" data-id="${item.id}">
+    //           <label class="form-check-label ${item.completed ? 'completed' : ''}" data-action="complete" data-id="${item.id}"> ${item.title}</label>
+    //           </div>
+    //           <button type="button" class="close ml-auto" aria-label="Close">
+    //           <span aria-hidden="true" data-action="remove" data-id="${item.id}">&times;</span>
+    //           </button>
+    //           </div>
+    //           </li>`;
+    //     })
+    //     document.getElementById('todoList').innerHTML = str;
+    //     document.getElementById('taskCount').textContent = todoData.length;
+    //     document.getElementById('newTodo').value = '';
+    //   }
+    // });
+    // document.getElementById('clearTask').addEventListener('click', function (e) {
+    //   e.preventDefault();
+    //   todoData = [];
+    //   document.getElementById('todoList').innerHTML = '';
+    //   document.getElementById('taskCount').textContent = todoData.length;
+    // });
+    // document.getElementById('todoList').addEventListener('click', function (e) {
+    //   var newIndex = 0;
+    //   if (e.target.dataset.action == 'remove') {
+    //     todoData.forEach(function (item, key) {
+    //       if (e.target.dataset.id == item.id) {
+    //         newIndex = key;
+    //       }
+    //     })
+    //     todoData.splice(newIndex, 1);
+    //     var str = '';
+    //     todoData.forEach(function (item) {
+    //       str += `<li class="list-group-item">
+    //           <div class="d-flex">
+    //           <div class="form-check">
+    //           <input type="checkbox" class="form-check-input" ${item.completed ? 'checked' : ''} data-action="complete" data-id="${item.id}">
+    //           <label class="form-check-label ${item.completed ? 'completed' : ''}" data-action="complete" data-id="${item.id}"> ${item.title}</label>
+    //           </div>
+    //           <button type="button" class="close ml-auto" aria-label="Close">
+    //           <span aria-hidden="true" data-action="remove" data-id="${item.id}">&times;</span>
+    //           </button>
+    //           </div>
+    //           </li>`;
+    //     });
+    //     document.getElementById('todoList').innerHTML = str;
+    //     document.getElementById('taskCount').textContent = todoData.length;
+    //   }
+    // });
+    // document.getElementById('todoList').addEventListener('click', function (e) {
+    //   if (e.target.dataset.action == 'complete') {
+    //     todoData.forEach(function (item) {
+    //       if (e.target.dataset.id == item.id) {
+    //         if (item.completed) {
+    //           item.completed = false;
+    //         } else {
+    //           item.completed = true;
+    //         }
+    //       }
+    //     })
+    //     var str = '';
+    //     todoData.forEach(function (item) {
+    //       str += `<li class="list-group-item">
+    //           <div class="d-flex">
+    //           <div class="form-check">
+    //           <input type="checkbox" class="form-check-input" ${item.completed ? 'checked' : ''} data-action="complete" data-id="${item.id}">
+    //           <label class="form-check-label ${item.completed ? 'completed' : ''}" data-action="complete" data-id="${item.id}"> ${item.title}</label>
+    //           </div>
+    //           <button type="button" class="close ml-auto" aria-label="Close">
+    //           <span aria-hidden="true" data-action="remove" data-id="${item.id}">&times;</span>
+    //           </button>
+    //           </div>
+    //           </li>`;
+    //     })
+    //     document.getElementById('todoList').innerHTML = str;
+    //     document.getElementById('taskCount').textContent = todoData.length;
+    //   }
+    // });
+  </script>
+</body>
+
+</html>
